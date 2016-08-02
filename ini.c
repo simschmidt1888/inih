@@ -69,6 +69,44 @@ static char* strncpy0(char* dest, const char* src, size_t size)
     return dest;
 }
 
+char** ini_get_sections(const char* filename)
+{
+  FILE* file;
+  char** sections;
+  char line[INI_MAX_LINE];
+  int counter = 0;
+
+  sections = (char**)malloc(sizeof(char) * 0);
+
+  file = fopen(filename, "r");
+  if (!file){ return NULL; }
+
+  while(fgets(line, INI_MAX_LINE, file) != NULL){
+    if(line[0] == '['){
+      //printf("%s\n", line);
+
+      char* pos = strchr(line,']');
+      //printf("Line pos: %ld\n", (pos - line));
+      *pos = '\0';
+
+
+      char * newSection = malloc(sizeof(char) * (pos - line) );
+      sections = (char**)realloc(sections, sizeof(char) * (counter + 1) );
+
+      memcpy(newSection,line + 1,pos-line);
+
+      sections[counter] = newSection;
+
+      counter++;
+
+
+    }
+  }
+
+  fclose(file);
+  return sections;
+}
+
 /* See documentation in header file. */
 int ini_parse_stream(ini_reader reader, void* stream, ini_handler handler,
                      void* user)
